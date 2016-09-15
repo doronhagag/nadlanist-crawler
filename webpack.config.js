@@ -9,7 +9,7 @@ let fs = require('fs'),
  *
  */
 const babel = {
-    entry: path.resolve(PATH_BASE, 'src/social_music_player.js'),
+    entry: path.resolve(PATH_BASE, 'src/nadlanist-crawler.js'),
 
     output: {
         path: path.resolve(PATH_BASE, 'dist/js'),
