@@ -29,6 +29,7 @@ node_modules
 # Optional npm cache directory
 .npm
 .c9
+.cache/cookie_jar/*.json
 
 # Optional REPL history
 .node_repl_history
