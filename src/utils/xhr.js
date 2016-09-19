@@ -5,6 +5,16 @@ import fs from 'fs';
 import FileCookieStore from 'tough-cookie-filestore';
 
 class XHR {
+    headers = {
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Charset': 'UTF-8;q=0.7,*;q=0.3',
+        'Accept-Encoding': 'gzip, deflate',
+        'Accept-Language': 'he-IL,en;q=0.8,he;q=0.6',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2815.0 Safari/537.36'
+    };
+
     _cookieDefault = {
         value: null,
         expires: null,
@@ -23,6 +33,7 @@ class XHR {
 
     setReferrer(referrer) {
         this.options.referrer = referrer;
+
         return this;
     }
 
@@ -31,27 +42,21 @@ class XHR {
      *
      */
     get(properties) {
-        let urlProps = this._getUrlPeroperies(properties.url);
-        let cookieJarPath = '.cache/cookie_jar/'+ urlProps.domain +'.json';
-
-        // create the json file if it does not exist
-        if (!fs.existsSync(cookieJarPath)) {
-            fs.closeSync(fs.openSync(cookieJarPath, 'w'));
-        }
-
-        let jar = Request.jar(new FileCookieStore(cookieJarPath));
-
-        for (let i in properties.cookies) {
-            jar.setCookie(this._getCookie(i, properties.cookies[i]), urlProps.url);
-        }
+        let headers = Object.assign({}, this.headers, {
+            'Referrer': properties.referrer || properties.url
+        });
+        console.log(headers);
 
         return Request({
             uri: properties.url,
-            headers: this._getHeader(),
+            headers: headers,
             qs: properties.params,
             gzip: true,
             encoding: 'binary',
-            jar: jar,
+            jar: this._getCookieJar(properties.url, properties.cookies),
+            //jar: false,
+
+
 
             transform: (body, response, resolveWithFullResponse) => {
                 console.log(response.headers);
@@ -67,11 +72,32 @@ class XHR {
         });
     }
 
+    /**
+     *
+     */
+    _getCookieJar(url, cookies = {}) {
+        let urlProps = this._getUrlPeroperies(url),
+            cookieJarPath = '.cache/cookie_jar/'+ urlProps.domain +'.json';
+
+        // create the json file if it does not exist
+        if (!fs.existsSync(cookieJarPath)) {
+            fs.closeSync(fs.openSync(cookieJarPath, 'w'));
+        }
+
+        let jar = Request.jar(new FileCookieStore(cookieJarPath));
+
+        for (let i in cookies) {
+            jar.setCookie(this._generateCookie(i, cookies[i]), urlProps.url);
+        }
+
+        return jar;
+    }
+
 
     /**
      *
      */
-    _getCookie(name, properties) {
+    _generateCookie(name, properties) {
         let cookieProperties = Object.assign({}, this._cookieDefault, properties),
             cookie = [
                 name +'='+ cookieProperties.value,
@@ -84,23 +110,6 @@ class XHR {
         }
 
         return Request.cookie(cookie.join('; '));
-    }
-
-
-    /**
-     *
-     */
-    _getHeader() {
-        return {
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Charset': 'UTF-8;q=0.7,*;q=0.3',
-            'Accept-Encoding': 'gzip, deflate',
-            'Accept-Language': 'he-IL,en;q=0.8,he;q=0.6',
-            'Cache-Control': 'no-cache',
-            'Connection': 'keep-alive',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2815.0 Safari/537.36',
-            'Referrer': this.options.referrer
-        };
     }
 
 
