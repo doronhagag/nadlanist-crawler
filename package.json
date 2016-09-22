@@ -8,6 +8,12 @@
   },
   "author": "Doron",
   "license": "MIT",
+  "dependencies": {
+    "cheerio": "^0.22.0",
+    "javascript-detector": "^0.0.5",
+    "request": "^2.74.0",
+    "request-promise": "^4.1.1"
+  },
   "devDependencies": {
     "atob": "^2.0.3",
     "babel-cli": "^6.11.4",
@@ -45,10 +51,5 @@
   "bugs": {
     "url": "https://github.com/doronhagag/nadlanist-crawler/issues"
   },
-  "homepage": "https://github.com/doronhagag/nadlanist-crawler#readme",
-  "dependencies": {
-    "cheerio": "^0.22.0",
-    "request": "^2.74.0",
-    "request-promise": "^4.1.1"
-  }
+  "homepage": "https://github.com/doronhagag/nadlanist-crawler#readme"
 }

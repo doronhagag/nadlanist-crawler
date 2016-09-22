@@ -1,7 +1,8 @@
+import JavascriptDetector from 'javascript-detector';
 import NadlanBase from '../../base/nadlan_base';
 import XHR from '../../utils/xhr';
 import atob from 'atob';
-import jsdom from 'jsdom';
+
 
 class YadShtayim extends NadlanBase {
     /**
@@ -59,6 +60,7 @@ class YadShtayim extends NadlanBase {
 
         return new Promise((resolve, reject) => {
             let xhr = new XHR(),
+                jsDetector = new JavascriptDetector(),
                 run = () => {
                     if (tries.count >= tries.max) {
                         console.log('MAX RETRIES EXCIDED '+tries.count);
@@ -67,21 +69,19 @@ class YadShtayim extends NadlanBase {
 
                     let response = xhr.get(request);
                     response.then(($, response) => {
-                        if (0 > $.html().indexOf('<title></title>'))
+                        let html = $.html();
+                        if (jsDetector.isEncoded(html))
                             return resolve($);
 
                         console.log('EMPTY TITLE - DETECTED EMPTY TITLE');
-                        this._botDetection($.html()).then(PRID => {
+                        jsDetector.getID(html).then(ID => {
+                            let PRID = ID.value;
                             console.log('PRID DETECTED: '+PRID);
 
-                            request = Object.assign({}, request, {
-                                cookies: {
-                                    PRID: {
-                                        value: PRID,
-                                        expires: 10
-                                    }
-                                }
-                            });
+                            request.cookies.PRID = {
+                                value: PRID,
+                                expires: 10
+                            };
 
                             console.log('NEW REQUEST');
                             console.log(request);
