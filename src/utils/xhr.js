@@ -56,8 +56,6 @@ class XHR {
             jar: this._getCookieJar(properties.url, properties.cookies),
             //jar: false,
 
-
-
             transform: (body, response, resolveWithFullResponse) => {
                 console.log(response.headers);
 
@@ -72,6 +70,7 @@ class XHR {
         });
     }
 
+
     /**
      *
      */
@@ -84,9 +83,14 @@ class XHR {
             fs.closeSync(fs.openSync(cookieJarPath, 'w'));
         }
 
-        let jar = Request.jar(new FileCookieStore(cookieJarPath));
+        let jar = Request.jar(new FileCookieStore(cookieJarPath)),
+            cookieString = jar.getCookieString(urlProps.url);
 
         for (let i in cookies) {
+            if (true !== cookies[i].override && -1 < cookieString.indexOf(i)) {
+                continue;
+            }
+
             jar.setCookie(this._generateCookie(i, cookies[i]), urlProps.url);
         }
 

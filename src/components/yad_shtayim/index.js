@@ -21,19 +21,16 @@ class YadShtayim extends NadlanBase {
                 encoding: 'win1255',
                 cookies: {
                     CLIENT_WIDTH_DIR: {
-                        value: 2541,
-                        expires: 60 * 60 * 24 * 10,
-                        override: false
+                        value: 2540,
+                        expires: 60 * 60 * 24 * 10
                     },
                     MAIN_WIDTH_DIR: {
-                        value: 2541,
-                        expires: 60 * 60 * 24 * 10,
-                        override: false
+                        value: 2540,
+                        expires: 60 * 60 * 24 * 10
                     },
                     DivurNadlanSearchAgain_sales: {
                         value: 2,
-                        expires: 60 * 60 * 24 * 30 * 12 * 10,
-                        override: false
+                        expires: 60 * 60 * 24 * 30 * 12 * 10
                     }
                 }
             };
@@ -69,25 +66,43 @@ class YadShtayim extends NadlanBase {
 
                     let response = xhr.get(request);
                     response.then(($, response) => {
-                        let html = $.html();
-                        if (jsDetector.isEncoded(html))
+                        let html = $.html(),
+                            encodingMethod = jsDetector.getEncodingMethod(html);
+
+                        if (false === encodingMethod)
                             return resolve($);
 
-                        console.log('EMPTY TITLE - DETECTED EMPTY TITLE');
-                        jsDetector.getID(html).then(ID => {
-                            let PRID = ID.value;
-                            console.log('PRID DETECTED: '+PRID);
+                        switch(encodingMethod) {
+                            case JavascriptDetector.ENCODING_TYPE.BASIC:
+                                console.log('BASIC ----- ADDING PRID!');
+                                jsDetector.getID(html).then(ID => {
+                                    console.log(['PRID DETECTED:', ID]);
 
-                            request.cookies.PRID = {
-                                value: PRID,
-                                expires: 10
-                            };
+                                    for (let i in ID) {
+                                        request.cookies[i] = {
+                                            value: ID[i].value,
+                                            expires: 10,
+                                            override: true
+                                        }
+                                    }
 
-                            console.log('NEW REQUEST');
-                            console.log(request);
+                                    console.log('NEW REQUEST');
+                                    console.log(request);
+                                    console.log(html);
 
-                            run();
-                        });
+                                    setTimeout(() => {
+                                        run();
+                                    }, 4000);
+                                });
+
+                                break;
+                            case JavascriptDetector.ENCODING_TYPE.ADVNACED:
+                                console.log('ADVNACED ----- FIGURE IT OUT!');
+                                console.log('NEW REQUEST');
+                                console.log(request);
+                                console.log(html);
+                                break;
+                        }
                     });
 
                     tries.count++;
@@ -95,7 +110,7 @@ class YadShtayim extends NadlanBase {
                     return response;
                 };
 
-                run();
+            run();
         });
     }
 
